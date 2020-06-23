@@ -1,3 +1,1 @@
-# georgs-popo
-bunga bunga
-badabing badabung
+this is my repositroy, used to play around and try stuff 
