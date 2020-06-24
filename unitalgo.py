@@ -70,7 +70,7 @@ def convert_rgb(unit_array):
 #     return unit_array        
 def convert_int(unit_array):
     for x in range(len(unit_array)):
-        for y in range(len(unit_array[x])):  
+        for y in range(len(unit_array[x])): 
             unit_array[x][y] = coloradress_with_sleepy[unit_array[x][y]]
     return unit_array
 
@@ -91,26 +91,26 @@ def make_move(unit_array):
                 cavalry(x,y,unit_array)
             elif np.all(unit_array[x][y] == sleepy_knight):
                 unit_array[x][y] = knight
-    print("turn finished")
+    #print("turn finished")
     return unit_array
            
-def ai_make_move(unit_array):
+def ai_make_move(unit_array, score=None):
     for x in range(len(unit_array)):
         for y in range(len(unit_array[x])):
             if np.all(unit_array[x][y] == ai_warrior):
-                ai_melee(x,y,unit_array)
+                ai_melee(x,y,unit_array, score)
             elif np.all(unit_array[x][y] == sleepy_ai_warrior):
                 unit_array[x][y] = ai_warrior
             elif np.all(unit_array[x][y] == ai_bowman):
-                ai_ranged(x,y,unit_array)
+                ai_ranged(x,y,unit_array, score)
             elif np.all(unit_array[x][y] == sleepy_ai_bowman):
                 unit_array[x][y] = ai_bowman
             elif np.all(unit_array[x][y] == ai_knight):
-                ai_cavalry(x,y,unit_array)
+                ai_cavalry(x,y,unit_array, score)
             elif np.all(unit_array[x][y] == sleepy_ai_knight):
                 unit_array[x][y] = ai_knight
-    print("turn finished ai")
-    return unit_array
+    #print("turn finished ai")
+    return unit_array, score
     
 #PLAYER MOVE FUNCTIONS  
 
@@ -180,7 +180,7 @@ def cavalry(x,y,unit_array):
 
 #AI MOVE FUNCTIONS
 
-def ai_melee(x,y,unit_array):
+def ai_melee(x,y,unit_array, score=None):
     if y-1 <= 0:   #am ende angekommen
         return unit_array
     else:
@@ -198,11 +198,13 @@ def ai_melee(x,y,unit_array):
             print("yeet ai")
             attack_choice = np.where(c==1)[0]
             unit_array[random.choice(attack_choice)][y-1] = empty
+            if score is not None:
+                score[x] += 1
             
-    return unit_array
+    return unit_array, score
 
 
-def ai_ranged(x,y,unit_array):
+def ai_ranged(x,y,unit_array, score=None):
     if y-1 <= 0:   #am ende angekommen
         return unit_array
     else:
@@ -220,10 +222,12 @@ def ai_ranged(x,y,unit_array):
             print("yeet pfeil ai")
             attack_choice = np.where(c==1)[0]
             unit_array[random.choice(attack_choice)][y-2] = empty
+            if score is not None:
+                score[x] += 1
             
-    return unit_array
+    return unit_array, score
 
-def ai_cavalry(x,y,unit_array):
+def ai_cavalry(x,y,unit_array, score=None):
     if y-1 <= 0:   #am ende angekommen
         return unit_array
     else:
@@ -241,33 +245,69 @@ def ai_cavalry(x,y,unit_array):
             print("yeet ferd ai")
             attack_choice = np.where(c==1)[0]
             unit_array[random.choice(attack_choice)][y-1] = empty
+            if score is not None:
+                score[x] += 1
             
-    return unit_array
+            
+    return unit_array, score
 
 #AI 
     
 def find_counter(unit_array):
+    pre_ai_array= np.copy(unit_array)
+    temp_unit_array = unit_array
     unit_value = np.array([0,1,1,1,1,2,2,2,2,3,3,3,3])
     army_value = unit_value[unit_array]
     army_value = sum(sum(army_value))
-    units = np.array([0,2,6,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+    units = np.array([0,2,6,10,0,0,0,0,0,0,0,0,0,0,0,0])
     value = 0
-    episodes = 1
-    print(army_value)
-    for x in range(episodes): 
+    episodes = 25
+    highest_score = 0
+    
+    while value <= army_value:  #initiate first army position randomly
+        for y in range(50,100):
+            for x in range(len(unit_array)):
+                unit_array[x][y] = random.choice(units)
+                value = value + unit_value[unit_array[x][y]]
+                if value > army_value:
+                    break
+            if value > army_value:
+                break
+            
+    for x in range(episodes):   #do fight and reposition cycles for amount of episodes
+        temp_unit_array = np.copy(unit_array)
         print(f"episode {x}")
+        score = np.zeros(len(unit_array),dtype='int')
+        i = 0
+        while i < 50:   #take 50 turns and score at which x coordinates fights happen 
+            unit_array = make_move(unit_array)          
+            unit_array, score = ai_make_move(unit_array, score)
+            i += 1
+            
+        print(score)
+        print(f"score of this episode: {sum(score)}")   #compare score with highest score
+        if sum(score) > highest_score:
+            highest_score = sum(score)
+            highest_array = np.copy(temp_unit_array)
+        elif sum(score) == 0:
+            score[10] = 1
+            score[40] = 1
+        
+        unit_array = np.copy(pre_ai_array)
+        value = 0
         while value <= army_value:
             for y in range(50,100):
-                for x in range(len(unit_array)):
+                for x in range(min(np.where(score!=0)[0])-1, max(np.where(score!=0)[0])+1):
                     unit_array[x][y] = random.choice(units)
                     value = value + unit_value[unit_array[x][y]]
-                    print(value)
-                    print(value<=army_value)
                     if value > army_value:
                         break
                 if value > army_value:
                     break
-    return unit_array
+       
+    print(highest_score)    
+    return highest_array.tolist()
+   
         
                     
 

@@ -20,7 +20,7 @@ colorcodes = [(255,255,255),(38, 117, 35),(26, 156, 128),(145, 156, 26),(163, 35
 class NimGui(object):
     def __init__(self, root):
         self.root = root
-        self.root.title("War Simulator (Jetzt mit mittelmäßiger KI!)")
+        self.root.title("War Simulator (Jetzt mit mittelmaessiger KI!)")
         self.image_size = 100, 50
         self.root.minsize(width=500, height=300)
         self.animation_started = False
@@ -98,14 +98,14 @@ class NimGui(object):
                 updated_units = unitalgo.make_move(units_as_list)
                 self.player_turn = 0
             else:
-                updated_units = unitalgo.ai_make_move(units_as_list)
+                updated_units = unitalgo.ai_make_move(units_as_list)[0]
                 self.player_turn = 1
         else:
             if self.player_turn == 1:
                 updated_units = unitalgo.make_move(units_as_list)
                 self.player_turn = 0
             else:
-                updated_units = unitalgo.ai_make_move(units_as_list)
+                updated_units = unitalgo.ai_make_move(units_as_list)[0]
                 self.player_turn = 1
         unitalgo.convert_int(updated_units)
         numpy_image = np.array(updated_units).astype('uint8')
