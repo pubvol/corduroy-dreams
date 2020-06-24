@@ -297,7 +297,7 @@ def find_counter(unit_array):
         value = 0
         while value <= army_value:
             for y in range(50,100):
-                for x in range(min(np.where(score!=0)[0])-1, max(np.where(score!=0)[0])+1):
+                for x in range(min(np.where(score!=0)[0])-3, max(np.where(score!=0)[0])+3):
                     unit_array[x][y] = random.choice(units)
                     value = value + unit_value[unit_array[x][y]]
                     if value > army_value:
